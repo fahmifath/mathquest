@@ -1,176 +1,307 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, Star, BarChart3, ChevronRight } from 'lucide-react';
+import { useApp } from '../contexts/AppContext';
+import { ChevronRight, Star, BarChart3, Users, Zap, Lock, CheckCircle2, X } from 'lucide-react';
+
+const jenjangData = [
+  {
+    id: 'SD',
+    title: 'Sekolah Dasar',
+    subtitle: 'Kelas 1 – 6',
+    emoji: '🌱',
+    desc: 'Fondasi matematika yang kuat dengan cara yang menyenangkan dan interaktif.',
+    color: '#22c55e',
+    lightBg: 'bg-green-50',
+    border: 'border-green-200',
+    textColor: 'text-green-700',
+    badgeBg: 'bg-green-100',
+    difficulty: 1,
+    xpBonus: 500,
+    questers: '52.4K',
+    badge: 'First Steps',
+    materi: ['Penjumlahan & Pengurangan', 'Perkalian Dasar', 'Pembagian Dasar', 'Pecahan Sederhana'],
+    stats: [
+      { name: 'Aritmatika', value: 80 },
+      { name: 'Perkalian', value: 70 },
+      { name: 'Pecahan', value: 55 },
+    ],
+  },
+  {
+    id: 'SMP',
+    title: 'Sekolah Menengah Pertama',
+    subtitle: 'Kelas 7 – 9',
+    emoji: '⚡',
+    desc: 'Eksplorasi aljabar dan geometri dengan tantangan yang semakin seru.',
+    color: '#0259DD',
+    lightBg: 'bg-blue-50',
+    border: 'border-blue-200',
+    textColor: 'text-blue-700',
+    badgeBg: 'bg-blue-100',
+    difficulty: 2,
+    xpBonus: 750,
+    questers: '38.1K',
+    badge: 'Explorer',
+    materi: ['Aljabar Linear', 'Himpunan', 'Persamaan Linear', 'Teorema Pythagoras'],
+    stats: [
+      { name: 'Aljabar', value: 85 },
+      { name: 'Geometri', value: 75 },
+      { name: 'Statistika', value: 65 },
+    ],
+  },
+  {
+    id: 'SMA',
+    title: 'Sekolah Menengah Atas',
+    subtitle: 'Kelas 10 – 12',
+    emoji: '🔥',
+    desc: 'Persiapan tingkat lanjut dengan kalkulus, trigonometri, dan matriks.',
+    color: '#FF6648',
+    lightBg: 'bg-orange-50',
+    border: 'border-orange-200',
+    textColor: 'text-orange-700',
+    badgeBg: 'bg-orange-100',
+    difficulty: 3,
+    xpBonus: 1000,
+    questers: '21.9K',
+    badge: 'Champion',
+    materi: ['Trigonometri', 'Kalkulus Dasar', 'Logaritma', 'Matriks & Vektor'],
+    stats: [
+      { name: 'Kalkulus', value: 90 },
+      { name: 'Trigonometri', value: 85 },
+      { name: 'Matriks', value: 80 },
+    ],
+  },
+];
+
+const DifficultyStars = ({ count }) => (
+  <div className="flex gap-1">
+    {[1, 2, 3].map((i) => (
+      <Star
+        key={i}
+        size={12}
+        className={i <= count ? 'text-[#FF6648]' : 'text-slate-200'}
+        fill={i <= count ? '#FF6648' : '#e2e8f0'}
+      />
+    ))}
+  </div>
+);
+
+const StatBar = ({ name, value, color }) => (
+  <div>
+    <div className="flex justify-between text-xs font-bold mb-1.5">
+      <span className="text-slate-600">{name}</span>
+      <span style={{ color }}>{value}%</span>
+    </div>
+    <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
+      <div
+        className="h-full rounded-full transition-all duration-700"
+        style={{ width: `${value}%`, background: color }}
+      />
+    </div>
+  </div>
+);
 
 const PilihJenjang = () => {
   const navigate = useNavigate();
-  const [selectedLevel, setSelectedLevel] = useState(null);
+  const { updateJenjang } = useApp();
+  const [selected, setSelected] = useState(null);
 
-  const jenjangData = [
-    {
-      id: 'SD',
-      title: 'Sekolah Dasar (SD)',
-      desc: 'Fondasi matematika dengan cara yang menyenangkan.',
-      image: 'https://via.placeholder.com/300x200?text=SD+Illustration', // Ganti dengan aset gambar kamu
-      materi: ['Penjumlahan & Pengurangan', 'Perkalian Dasar', 'Pembagian Dasar', 'Pecahan Sederhana'],
-      stats: [
-        { name: 'Perkalian', difficulty: '80%' },
-        { name: 'Pembagian', difficulty: '70%' },
-      ]
-    },
-    {
-      id: 'SMP',
-      title: 'Sekolah Menengah Pertama (SMP)',
-      desc: 'Eksplorasi aljabar dan geometri yang menantang.',
-      image: 'https://via.placeholder.com/300x200?text=SMP+Illustration',
-      materi: ['Aljabar', 'Himpunan', 'Persamaan Linear', 'Teorema Pythagoras'],
-      stats: [
-        { name: 'Aljabar', difficulty: '85%' },
-        { name: 'Geometri', difficulty: '75%' },
-      ]
-    },
-    {
-      id: 'SMA',
-      title: 'Sekolah Menengah Atas (SMA)',
-      desc: 'Persiapan tingkat lanjut dengan kalkulus dan trigonometri.',
-      image: 'https://via.placeholder.com/300x200?text=SMA+Illustration',
-      materi: ['Trigonometri', 'Kalkulus Dasar', 'Logaritma', 'Matriks'],
-      stats: [
-        { name: 'Kalkulus', difficulty: '90%' },
-        { name: 'Trigonometri', difficulty: '85%' },
-      ]
-    }
-  ];
+  const handleSelect = (jenjang) => {
+    setSelected(jenjang);
+  };
+
+  const handleConfirm = () => {
+    if (!selected) return;
+    updateJenjang(selected.id);
+    navigate(`/pre-test/${selected.id}`);
+  };
 
   return (
-    <div className="min-h-screen bg-mq-peach/20 py-12 px-6">
-      <div className="max-w-5xl mx-auto">
+    <div className="min-h-screen bg-[#FDFCFB] font-sans py-12 px-6 relative overflow-hidden">
+      {/* Dekorasi background */}
+      <div className="absolute top-0 right-0 w-96 h-96 bg-[#84AFFB]/8 rounded-full -mr-48 -mt-48 pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#FFE1D7]/50 rounded-full -ml-32 -mb-32 pointer-events-none" />
+
+      <div className="max-w-5xl mx-auto relative z-10">
+
+        {/* ── Header ── */}
         <div className="text-center mb-12">
-          <h2 className="text-4xl font-black text-slate-900 mb-4">Pilih Jenjang Pendidikan</h2>
-          <p className="text-slate-600">Sesuaikan tantangan dengan tingkat sekolahmu saat ini.</p>
-        </div>
-
-        {/* Grid Card Landscape */}
-        <div className="space-y-6">
-          {jenjangData.map((item) => (
-            <div 
-              key={item.id}
-              onClick={() => setSelectedLevel(item)}
-              className="bg-white rounded-3xl p-4 flex flex-col md:flex-row items-center gap-8 cursor-pointer border-2 border-transparent hover:border-mq-primary hover:shadow-2xl transition-all group overflow-hidden shadow-lg"
-            >
-              {/* Image Section */}
-              <div className="w-full md:w-72 h-48 bg-slate-100 rounded-2xl overflow-hidden shrink-0">
-                <img 
-                  src={item.image} 
-                  alt={item.title} 
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                />
-              </div>
-
-              {/* Content Section */}
-              <div className="flex-1 text-center md:text-left">
-                <h3 className="text-2xl font-bold text-mq-primary mb-2">{item.title}</h3>
-                <p className="text-slate-500 mb-6 leading-relaxed">{item.desc}</p>
-                <div className="flex items-center justify-center md:justify-start gap-2 text-mq-orange font-bold">
-                  <span>Lihat Detail Pelajaran</span>
-                  <ChevronRight size={18} className="group-hover:translate-x-2 transition-transform" />
+          {/* Breadcrumb langkah */}
+          <div className="flex items-center justify-center gap-2 mb-6">
+            {['Daftar', 'Pilih Jenjang', 'Pre-Test', 'Dashboard'].map((step, i) => (
+              <React.Fragment key={step}>
+                <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                  i === 1
+                    ? 'bg-[#0259DD] text-white'
+                    : i < 1
+                    ? 'bg-green-100 text-green-700'
+                    : 'bg-slate-100 text-slate-400'
+                }`}>
+                  {i < 1 && <CheckCircle2 size={10} />}
+                  {step}
                 </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+                {i < 3 && <ChevronRight size={14} className="text-slate-300" />}
+              </React.Fragment>
+            ))}
+          </div>
 
-      {/* Modal / Pop-up */}
-      {selectedLevel && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white w-full max-w-2xl rounded-[2.5rem] overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-300">
-            <div className="relative p-8 md:p-10">
-              {/* Close Button */}
-              <button 
-                onClick={() => setSelectedLevel(null)}
-                className="absolute top-6 right-6 p-2 bg-slate-100 hover:bg-mq-peach rounded-full transition-colors"
+          <span className="inline-block px-4 py-1 bg-[#FFE1D7] text-[#FF6648] rounded-full text-[10px] font-black mb-4 uppercase tracking-[0.2em]">
+            Langkah 2 dari 4
+          </span>
+          <h2 className="text-4xl md:text-5xl font-black text-slate-950 uppercase italic tracking-tight mb-4">
+            Pilih <span className="text-[#0259DD] underline decoration-[#FF6648] decoration-4">Jenjangmu</span>
+          </h2>
+          <p className="text-slate-600 font-bold max-w-md mx-auto leading-relaxed">
+            Sesuaikan petualangan dengan tingkat sekolahmu. Setiap jenjang punya quest dan reward eksklusif!
+          </p>
+        </div>
+
+        {/* ── Grid Kartu Jenjang ── */}
+        <div className="grid md:grid-cols-3 gap-6 mb-8">
+          {jenjangData.map((item) => {
+            const isSelected = selected?.id === item.id;
+            return (
+              <div
+                key={item.id}
+                onClick={() => handleSelect(item)}
+                className={`bg-white rounded-[2rem] border-4 cursor-pointer transition-all duration-300 overflow-hidden group relative
+                  ${isSelected
+                    ? 'shadow-2xl -translate-y-2'
+                    : 'border-slate-100 hover:border-slate-200 hover:-translate-y-1 hover:shadow-xl shadow-md'
+                  }`}
+                style={isSelected ? { borderColor: item.color, boxShadow: `0 20px 60px ${item.color}25` } : {}}
               >
-                <X size={24} className="text-slate-600" />
-              </button>
+                {/* Selected check */}
+                {isSelected && (
+                  <div
+                    className="absolute top-4 right-4 w-7 h-7 rounded-full flex items-center justify-center z-10"
+                    style={{ background: item.color }}
+                  >
+                    <CheckCircle2 size={16} className="text-white" fill="white" />
+                  </div>
+                )}
 
-              <div className="flex items-center gap-4 mb-6">
-                <div className="p-3 bg-mq-blue-light/20 rounded-2xl text-mq-primary">
-                  <Star fill="currentColor" size={28} />
+                {/* Header kartu */}
+                <div
+                  className="p-6 pb-5"
+                  style={{ background: `${item.color}12` }}
+                >
+                  <div className="flex items-start gap-4 mb-4">
+                    <div
+                      className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shadow-sm flex-shrink-0"
+                      style={{ background: `${item.color}20` }}
+                    >
+                      {item.emoji}
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-[0.2em] mb-0.5" style={{ color: item.color }}>
+                        {item.subtitle}
+                      </p>
+                      <h3 className="font-black text-slate-900 text-lg leading-tight">{item.title}</h3>
+                    </div>
+                  </div>
+
+                  <p className="text-sm text-slate-500 font-semibold leading-relaxed">{item.desc}</p>
                 </div>
-                <h3 className="text-3xl font-black text-slate-900">{selectedLevel.title}</h3>
-              </div>
 
-              <div className="grid md:grid-cols-2 gap-8">
-                {/* Deskripsi Materi */}
-                <div>
-                  <h4 className="font-bold text-lg mb-4 flex items-center gap-2">
-                    <BookOpen size={20} className="text-mq-primary" />
-                    Apa yang akan kamu pelajari?
-                  </h4>
-                  <ul className="space-y-3">
-                    {selectedLevel.materi.map((m, idx) => (
-                      <li key={idx} className="flex items-center gap-3 text-slate-600">
-                        <div className="w-2 h-2 bg-mq-orange rounded-full" />
-                        {m}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* Statistik Kesulitan */}
-                <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
-                  <h4 className="font-bold text-lg mb-4 flex items-center gap-2">
-                    <BarChart3 size={20} className="text-mq-primary" />
-                    Tingkat Kesulitan
-                  </h4>
-                  <div className="space-y-5">
-                    {selectedLevel.stats.map((stat, idx) => (
-                      <div key={idx}>
-                        <div className="flex justify-between text-sm font-bold mb-2">
-                          <span>{stat.name}</span>
-                          <span className="text-mq-primary">{stat.difficulty}</span>
-                        </div>
-                        <div className="w-full h-3 bg-slate-200 rounded-full overflow-hidden">
-                          <div 
-                            className="h-full bg-mq-primary rounded-full transition-all duration-1000"
-                            style={{ width: stat.difficulty }}
-                          />
-                        </div>
+                {/* Body kartu */}
+                <div className="p-6 pt-5 space-y-4">
+                  {/* Difficulty & Questers */}
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Kesulitan</p>
+                      <DifficultyStars count={item.difficulty} />
+                    </div>
+                    <div className="text-right">
+                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Questers</p>
+                      <div className="flex items-center gap-1">
+                        <Users size={11} className="text-slate-400" />
+                        <span className="text-xs font-black text-slate-600">{item.questers}</span>
                       </div>
+                    </div>
+                  </div>
+
+                  {/* Materi */}
+                  <div>
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Materi Quest</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {item.materi.map((m, i) => (
+                        <span
+                          key={i}
+                          className="text-[10px] font-bold px-2 py-1 rounded-lg"
+                          style={{ background: `${item.color}15`, color: item.color }}
+                        >
+                          {m}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Stat bars */}
+                  <div className="space-y-2.5">
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Tingkat Kesulitan</p>
+                    {item.stats.map((s) => (
+                      <StatBar key={s.name} name={s.name} value={s.value} color={item.color} />
                     ))}
+                  </div>
+
+                  {/* XP Reward */}
+                  <div
+                    className="flex items-center gap-3 rounded-2xl px-4 py-3"
+                    style={{ background: `${item.color}10`, border: `1px solid ${item.color}25` }}
+                  >
+                    <div
+                      className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
+                      style={{ background: item.color }}
+                    >
+                      <Zap size={14} className="text-white" fill="white" />
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-wider" style={{ color: item.color }}>
+                        Bonus Starter
+                      </p>
+                      <p className="text-xs font-black text-slate-700">
+                        +{item.xpBonus.toLocaleString()} XP &bull; Lencana "{item.badge}"
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
-
-              {/* Action Button */}
-              <button 
-                onClick={() => navigate(`/pre-test/${selectedLevel.id}`)}
-                className="w-full mt-10 py-4 bg-mq-primary text-white rounded-2xl font-bold text-xl hover:bg-mq-orange shadow-lg shadow-blue-200 hover:shadow-orange-200 transition-all flex items-center justify-center gap-3"
-              >
-                Mulai Pre-Test Sekarang
-                <ChevronRight size={24} />
-              </button>
-            </div>
-          </div>
+            );
+          })}
         </div>
-      )}
+
+        {/* ── Tombol Konfirmasi ── */}
+        <div className="flex justify-center">
+          <button
+            onClick={handleConfirm}
+            disabled={!selected}
+            className={`px-10 py-5 rounded-[2rem] font-black text-xl uppercase italic tracking-tight transition-all flex items-center gap-3
+              ${selected
+                ? 'bg-[#FF6648] text-white shadow-[0_6px_0_#d14d33] hover:translate-y-[-2px] hover:shadow-[0_8px_0_#d14d33] active:translate-y-1 active:shadow-[0_2px_0_#d14d33]'
+                : 'bg-slate-100 text-slate-300 cursor-not-allowed shadow-none'
+              }`}
+          >
+            {selected ? (
+              <>
+                {selected.emoji} Mulai Pre-Test {selected.id}
+                <ChevronRight size={24} className="group-hover:translate-x-1 transition-transform" />
+              </>
+            ) : (
+              <>
+                <Lock size={20} /> Pilih Jenjang Dulu
+              </>
+            )}
+          </button>
+        </div>
+
+        {selected && (
+          <p className="text-center text-xs text-slate-400 font-bold mt-4">
+            Kamu memilih <span className="text-[#0259DD] font-black">{selected.title}</span> &bull; Pre-Test hanya 3 soal &bull; Tidak sampai 5 menit!
+          </p>
+        )}
+      </div>
     </div>
   );
 };
-
-// Helper Icon for Modal
-const BookOpen = ({ size, className }) => (
-  <svg 
-    xmlns="http://www.w3.org/2000/svg" 
-    width={size} height={size} 
-    viewBox="0 0 24 24" fill="none" 
-    stroke="currentColor" strokeWidth="2" 
-    strokeLinecap="round" strokeLinejoin="round" 
-    className={className}
-  >
-    <path d="M2 3h6a4 4 0 0 1 4 4v14a4 4 0 0 0-4-4H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a4 4 0 0 1 4-4h6z"/>
-  </svg>
-);
 
 export default PilihJenjang;
