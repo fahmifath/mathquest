@@ -8,13 +8,14 @@ import {
   LogOut, 
   Bell,
   Search,
-  Star
+  Star,
+  User
 } from 'lucide-react';
 
-// Import sub-pages
 import QuestMap from './QuestMap';
 import Leaderboard from './Leaderboard';
 import Achievement from './Achievement';
+import Profile from './Profile';
 
 const Dashboard = () => {
   const { user, logout } = useApp();
@@ -30,6 +31,7 @@ const Dashboard = () => {
     { name: 'Quest Map', path: '/dashboard/quest-map', icon: <MapIcon size={20} /> },
     { name: 'Leaderboard', path: '/dashboard/leaderboard', icon: <Trophy size={20} /> },
     { name: 'Achievement', path: '/dashboard/achievement', icon: <Award size={20} /> },
+    { name: 'Profil', path: '/dashboard/profile', icon: <User size={20} /> },
   ];
 
   return (
@@ -48,15 +50,14 @@ const Dashboard = () => {
         {/* User Card di Sidebar */}
         <div className="mx-4 mb-4 p-4 bg-mq-primary/5 rounded-2xl border border-mq-primary/10">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl overflow-hidden border-2 border-white shadow-md">
+            <div className="w-11 h-11 rounded-xl overflow-hidden border-2 border-white shadow-md shrink-0">
               <img src={user?.foto} alt="User" className="w-full h-full object-cover" />
             </div>
-            <div>
-              <p className="font-black text-slate-800 text-sm leading-tight">{user?.username || 'Petualang'}</p>
+            <div className="min-w-0">
+              <p className="font-black text-slate-800 text-sm leading-tight truncate">{user?.username || 'Petualang'}</p>
               <p className="text-[10px] font-bold text-mq-primary uppercase tracking-wider">Lv.{user?.level || 1} · {user?.jenjang || 'SD'}</p>
             </div>
           </div>
-          {/* XP Bar */}
           <div className="mt-3">
             <div className="flex justify-between text-[10px] font-bold text-slate-400 mb-1">
               <span>{user?.xp || 0} XP</span>
@@ -129,8 +130,8 @@ const Dashboard = () => {
               <span className="absolute top-3 right-3 w-2 h-2 bg-mq-orange rounded-full border-2 border-white"></span>
             </button>
 
-            {/* Profile */}
-            <div className="flex items-center gap-4 pl-6 border-l border-slate-200">
+            {/* Avatar klik → profil */}
+            <Link to="/dashboard/profile" className="flex items-center gap-4 pl-6 border-l border-slate-200 hover:opacity-80 transition-opacity">
               <div className="text-right">
                 <p className="text-sm font-black text-slate-800">{user?.username || 'Petualang'}</p>
                 <p className="text-[10px] font-bold text-mq-primary uppercase tracking-wider">Level {user?.level || 1} Apprentice</p>
@@ -138,7 +139,7 @@ const Dashboard = () => {
               <div className="w-12 h-12 bg-mq-peach rounded-2xl border-2 border-white shadow-md overflow-hidden">
                 <img src={user?.foto} alt="User Profile" className="w-full h-full object-cover" />
               </div>
-            </div>
+            </Link>
           </div>
         </header>
 
@@ -149,6 +150,7 @@ const Dashboard = () => {
             <Route path="quest-map" element={<QuestMap />} />
             <Route path="leaderboard" element={<Leaderboard />} />
             <Route path="achievement" element={<Achievement />} />
+            <Route path="profile" element={<Profile />} />
           </Routes>
         </main>
       </div>
