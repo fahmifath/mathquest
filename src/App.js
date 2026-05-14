@@ -10,6 +10,9 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import PilihJenjang from './pages/PilihJenjang';
 import PreTest from './pages/Pretest';
+import ModuleReader from './pages/ModuleReader';
+import QuizPage from './pages/QuizPage';
+import QuizResultPage from './pages/QuizResultPage';
 
 function App() {
   return (
@@ -21,29 +24,41 @@ function App() {
           <Route path="/register" element={<Register />} />
 
           {/* Halaman yang diproteksi */}
-          <Route 
-            path="/pilih-jenjang" 
+          <Route
+            path="/pilih-jenjang"
             element={
               <ProtectedRoute>
                 <PilihJenjang />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/pre-test/:sessionId" 
+          <Route
+            path="/pre-test/:sessionId"
             element={
               <ProtectedRoute>
                 <PreTest />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/dashboard/*" 
+          <Route
+            path="/dashboard/*"
             element={
               <ProtectedRoute>
                 <Dashboard />
               </ProtectedRoute>
-            } 
+            }
+          />
+          <Route
+            path="/modules/:moduleId"
+            element={<ModuleReader />}
+          />
+          <Route
+            path="/quiz/:quizId"
+            element={<QuizPage />}
+          />
+          <Route
+            path="/quiz-result/:sessionId"
+            element={<QuizResultPage />}
           />
         </Routes>
       </Router>

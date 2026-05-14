@@ -1,11 +1,11 @@
 import React from 'react';
 import { Routes, Route, Link, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { useApp } from '../contexts/AppContext';
-import { 
-  Map as MapIcon, 
-  Trophy, 
-  Award, 
-  LogOut, 
+import {
+  Map as MapIcon,
+  Trophy,
+  Award,
+  LogOut,
   Bell,
   Search,
   Star,
@@ -55,13 +55,19 @@ const Dashboard = () => {
             </div>
             <div className="min-w-0">
               <p className="font-black text-slate-800 text-sm leading-tight truncate">{user?.username || 'Petualang'}</p>
-              <p className="text-[10px] font-bold text-mq-primary uppercase tracking-wider">Lv.{user?.level || 1} · {user?.jenjang || 'SD'}</p>
+              <p className="text-[10px] font-bold text-mq-primary uppercase tracking-wider">Lv.{user?.level || 1} · {
+                {
+                  primary: 'SD',
+                  middle: 'SMP',
+                  high: 'SMA',
+                }[user?.jenjang] || 'SD'
+              }</p>
             </div>
           </div>
           <div className="mt-3">
             <div className="flex justify-between text-[10px] font-bold text-slate-400 mb-1">
               <span>{user?.xp || 0} XP</span>
-              <span>{((user?.level || 1) * 1000)} XP</span>
+              <span>{((user?.level || 1) * 100)} XP</span>
             </div>
             <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
               <div
@@ -81,11 +87,10 @@ const Dashboard = () => {
                 <Link
                   key={link.path}
                   to={link.path}
-                  className={`flex items-center gap-4 px-4 py-4 rounded-2xl font-bold transition-all duration-300 ${
-                    isActive 
-                    ? 'bg-mq-primary text-white shadow-xl shadow-blue-200 translate-x-2' 
-                    : 'text-slate-500 hover:bg-mq-peach/30 hover:text-mq-primary'
-                  }`}
+                  className={`flex items-center gap-4 px-4 py-4 rounded-2xl font-bold transition-all duration-300 ${isActive
+                      ? 'bg-mq-primary text-white shadow-xl shadow-blue-200 translate-x-2'
+                      : 'text-slate-500 hover:bg-mq-peach/30 hover:text-mq-primary'
+                    }`}
                 >
                   {link.icon}
                   {link.name}
@@ -96,7 +101,7 @@ const Dashboard = () => {
         </nav>
 
         <div className="p-6 border-t border-slate-50">
-          <button 
+          <button
             onClick={handleLogout}
             className="flex items-center gap-4 w-full px-4 py-4 rounded-2xl font-bold text-mq-orange hover:bg-orange-50 transition-all"
           >
@@ -112,8 +117,8 @@ const Dashboard = () => {
         <header className="h-24 px-10 flex items-center justify-between sticky top-0 bg-[#FDFCFB]/80 backdrop-blur-md z-10 border-b border-slate-100/50">
           <div className="relative w-72">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-            <input 
-              type="text" 
+            <input
+              type="text"
               placeholder="Cari quest atau materi..."
               className="w-full pl-12 pr-4 py-3 bg-white border border-slate-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-mq-blue-light/50 transition-all text-sm font-medium"
             />
@@ -124,7 +129,7 @@ const Dashboard = () => {
               <Star className="text-mq-orange" fill="#FF6648" size={18} />
               <span className="font-black text-slate-700">{user?.xp || 0} XP</span>
             </div>
-            
+
             <button className="p-3 bg-white border border-slate-100 rounded-2xl text-slate-400 hover:text-mq-primary transition-all relative">
               <Bell size={20} />
               <span className="absolute top-3 right-3 w-2 h-2 bg-mq-orange rounded-full border-2 border-white"></span>

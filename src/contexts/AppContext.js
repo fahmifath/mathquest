@@ -33,6 +33,10 @@ export const AppProvider = ({ children }) => {
     }
   }, [user]);
 
+  useEffect(() => {
+    refreshUser();
+  }, []);
+
   const normalizeUser = (beUser) => {
     const latestLevel = beUser.userEducationLevels?.[0]?.educationLevel || null;
     return {
@@ -44,6 +48,7 @@ export const AppProvider = ({ children }) => {
       xp:       beUser.userXp?.totalXp || 0,
       level:    beUser.userXp?.level || 1,
       xpToNext: beUser.userXp?.xpToNextLevel || 100,
+      streak:  beUser.userStreak?.currentStreak || 0,
       jenjang:  latestLevel,
       rank:     '-',
     };
@@ -57,7 +62,6 @@ export const AppProvider = ({ children }) => {
 
     // Set user ke state dengan format FE
     setUser(normalizeUser(beUser));
-    return normalizeUser(beUser);
   };
   
   const updateJenjang = async (educationLevel) => {
