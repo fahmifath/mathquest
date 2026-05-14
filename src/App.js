@@ -30,7 +30,7 @@ function App() {
             } 
           />
           <Route 
-            path="/pre-test/:jenjang" 
+            path="/pre-test/:sessionId" 
             element={
               <ProtectedRoute>
                 <PreTest />

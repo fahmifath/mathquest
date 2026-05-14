@@ -1,7 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { loginUser, logoutUser, getMe } from '../services/authService';
 import { selectEducationLevel } from '../services/educationLevelService';
-import { levelToJenjang } from '../services/api';
 
 const AppContext = createContext();
 
@@ -34,35 +33,22 @@ export const AppProvider = ({ children }) => {
     }
   }, [user]);
 
-  // ── HELPER: Bentuk user object dari response BE ────────────────────────────
-
-  /**
-   * Normalisasi data user dari BE ke format yang dipakai FE.
-   * BE: { id, name, email, avatarUrl, userXp, userEducationLevels }
-   * FE: { username, email, foto, xp, level, jenjang, ... }
-   */
   const normalizeUser = (beUser) => {
     const latestLevel = beUser.userEducationLevels?.[0]?.educationLevel || null;
     return {
       id:       beUser.id,
-      username: beUser.name,               // BE "name" → FE "username"
+      username: beUser.name,            
       email:    beUser.email,
       foto:     beUser.avatarUrl
                 || `https://api.dicebear.com/7.x/avataaars/svg?seed=${beUser.name}`,
       xp:       beUser.userXp?.totalXp || 0,
       level:    beUser.userXp?.level || 1,
       xpToNext: beUser.userXp?.xpToNextLevel || 100,
-      jenjang:  latestLevel ? levelToJenjang[latestLevel] : null,
+      jenjang:  latestLevel,
       rank:     '-',
     };
   };
 
-  // ── FUNGSI LOGIN ───────────────────────────────────────────────────────────
-
-  /**
-   * Login ke backend dan simpan token + user ke state.
-   * @param {{ email, password }} credentials
-   */
   const login = async (credentials) => {
     const { user: beUser, token } = await loginUser(credentials);
 
@@ -71,27 +57,14 @@ export const AppProvider = ({ children }) => {
 
     // Set user ke state dengan format FE
     setUser(normalizeUser(beUser));
+    return normalizeUser(beUser);
   };
   
-  /**
-   * Simpan pilihan jenjang ke BE dan update state.
-   * Dipanggil di PilihJenjang.jsx.
-   * @param {"SD"|"SMP"|"SMA"} jenjang
-   */
-  const updateJenjang = async (jenjang) => {
-    await selectEducationLevel(jenjang); // kirim ke BE
-    setUser((prev) => ({ ...prev, jenjang }));
+  const updateJenjang = async (educationLevel) => {
+    await selectEducationLevel(educationLevel);
+    setUser((prev) => ({ ...prev, jenjang: educationLevel }));
   };
 
-  // ── FUNGSI TAMBAH XP ───────────────────────────────────────────────────────
-
-  /**
-   * Update XP user di state lokal.
-   * Dipanggil setelah dapat response finishQuizSession dari BE
-   * yang sudah include userXp terbaru.
-   *
-   * @param {{ totalXp, level, xpToNextLevel }} userXpFromBE
-   */
   const syncXpFromBE = (userXpFromBE) => {
     setUser((prev) => ({
       ...prev,
@@ -101,11 +74,6 @@ export const AppProvider = ({ children }) => {
     }));
   };
 
-  /**
-   * Tambah XP secara lokal (untuk pretest — BE tidak return userXp).
-   * Setelah halaman di-refresh, getMe() akan sync data terbaru.
-   * @param {number} amount
-   */
   const addXP = (amount) => {
     setUser((prev) => {
       if (!prev) return null;
@@ -115,12 +83,6 @@ export const AppProvider = ({ children }) => {
     });
   };
 
-  // ── FUNGSI REFRESH PROFIL ──────────────────────────────────────────────────
-
-  /**
-   * Ambil ulang profil user dari BE (sinkronisasi).
-   * Panggil setelah operasi yang mengubah data user (XP, jenjang, dll).
-   */
   const refreshUser = async () => {
     try {
       const beUser = await getMe();
@@ -131,11 +93,9 @@ export const AppProvider = ({ children }) => {
     }
   };
 
-  // ── FUNGSI LOGOUT ──────────────────────────────────────────────────────────
-
   const logout = async () => {
     try {
-      await logoutUser(); // beri tahu BE (opsional, BE hanya return success)
+      await logoutUser(); 
     } catch {
       // Abaikan error logout dari BE
     }

@@ -2,16 +2,18 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../contexts/AppContext';
 import { ChevronRight, Star, CheckCircle2, Sword, Zap, Shield } from 'lucide-react';
+import { createPretestSession } from '../services/pretestService';
 
 // ── Import gambar hero ───────────────────────────────────────────────────────
-import imgSD  from '../assets/SD.jpg';
+import imgSD from '../assets/SD.jpg';
 import imgSMP from '../assets/SMP.jpg';
 import imgSMA from '../assets/SMA.jpg';
 
 // ─── DATA JENJANG ─────────────────────────────────────────────────────────────
 const jenjangData = [
   {
-    id: 'SD',
+    id: 'primary',
+    label: 'SD',
     title: 'Sekolah Dasar',
     subtitle: 'Kelas 1 – 6',
     classLabel: 'SD',
@@ -25,7 +27,8 @@ const jenjangData = [
     materi: ['Penjumlahan & Pengurangan', 'Perkalian Dasar', 'Pembagian Dasar', 'Pecahan Sederhana'],
   },
   {
-    id: 'SMP',
+    id: 'middle',
+    label: 'SMP',
     title: 'Sekolah Menengah Pertama',
     subtitle: 'Kelas 7 – 9',
     classLabel: 'SMP',
@@ -39,7 +42,8 @@ const jenjangData = [
     materi: ['Aljabar Linear', 'Himpunan', 'Persamaan Linear', 'Teorema Pythagoras'],
   },
   {
-    id: 'SMA',
+    id: 'high',
+    label: 'SMA',
     title: 'Sekolah Menengah Atas',
     subtitle: 'Kelas 10 – 12',
     classLabel: 'SMA',
@@ -93,9 +97,9 @@ const HeroCard = ({ jenjang, isSelected, onClick }) => (
 
     {/* Label bawah — persis referensi */}
     <div className="mt-3 text-center">
-      <p className="font-black text-slate-800 text-sm uppercase tracking-wide">{jenjang.id}</p>
+      <p className="font-black text-slate-800 text-sm uppercase tracking-wide">{jenjang.label}</p>
       <div className="flex justify-center gap-0.5 mt-1">
-        {[1,2,3,4,5].map(s => (
+        {[1, 2, 3, 4, 5].map(s => (
           <Star
             key={s}
             size={12}
@@ -113,10 +117,29 @@ const PilihJenjang = () => {
   const navigate = useNavigate();
   const { updateJenjang } = useApp();
   const [selected, setSelected] = useState(jenjangData[0]);
+  const [loading, setLoading] = useState(false);
 
-  const handleConfirm = () => {
-    updateJenjang(selected.id);
-    navigate(`/pre-test/${selected.id}`);
+  const handleConfirm = async () => {
+    try {
+      setLoading(true);
+
+      // update global state + select education level
+      await updateJenjang(selected.id);
+
+      // create pretest session
+      const session = await createPretestSession(
+        selected.id
+      );
+
+      // redirect menggunakan sessionId
+      navigate(`/pre-test/${session.id}`);
+
+    } catch (error) {
+      console.error(error);
+
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -173,7 +196,7 @@ const PilihJenjang = () => {
                   className="flex items-center px-4 py-2 rounded-full text-[11px] font-black uppercase tracking-wider border"
                   style={{ color: selected.color, borderColor: selected.color + '44', backgroundColor: selected.color + '0a' }}
                 >
-                  ISLAND: {selected.id}
+                  ISLAND: {selected.label}
                 </span>
               </div>
 
@@ -231,7 +254,7 @@ const PilihJenjang = () => {
 
               {/* CTA Button */}
               <button
-                onClick={handleConfirm}
+                onClick={handleConfirm} disabled={loading}
                 className="flex items-center gap-2 px-8 py-4 rounded-2xl font-black text-base uppercase tracking-wider text-white transition-all hover:opacity-90 active:scale-95"
                 style={{
                   backgroundColor: '#FF6648',
@@ -239,10 +262,14 @@ const PilihJenjang = () => {
                 }}
                 onMouseEnter={e => e.currentTarget.style.boxShadow = '0 7px 0 #c94e35'}
                 onMouseLeave={e => e.currentTarget.style.boxShadow = '0 5px 0 #c94e35'}
-                onMouseDown={e  => { e.currentTarget.style.boxShadow = '0 2px 0 #c94e35'; e.currentTarget.style.transform = 'translateY(3px)'; }}
-                onMouseUp={e    => { e.currentTarget.style.boxShadow = '0 5px 0 #c94e35'; e.currentTarget.style.transform = 'none'; }}
+                onMouseDown={e => { e.currentTarget.style.boxShadow = '0 2px 0 #c94e35'; e.currentTarget.style.transform = 'translateY(3px)'; }}
+                onMouseUp={e => { e.currentTarget.style.boxShadow = '0 5px 0 #c94e35'; e.currentTarget.style.transform = 'none'; }}
               >
-                Mulai Pre-Test {selected.id} <ChevronRight size={18} />
+                {
+                  loading
+                    ? 'Memulai...'
+                    : `Mulai Pre-Test ${selected.label}`
+                }
               </button>
 
               <p className="mt-3 text-[10px] text-slate-400 font-bold">

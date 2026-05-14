@@ -7,17 +7,12 @@ import { apiFetch, authHeader, jenjangToLevel } from './api';
 /**
  * Simpan pilihan jenjang user ke database.
  *
- * BE menerima: { educationLevel: "primary" | "middle" | "high" }
- * FE mengirim: jenjang "SD" | "SMP" | "SMA" → dikonversi dulu
- *
  * Dipanggil di PilihJenjang.jsx saat user klik "Mulai Pre-Test".
- * Response: { id, userId, educationLevel, selectedAt }
  */
-export const selectEducationLevel = async (jenjang) => {
-  const educationLevel = jenjangToLevel[jenjang];
+export const selectEducationLevel = async (educationLevel) => {
 
   if (!educationLevel) {
-    throw new Error(`Jenjang tidak valid: ${jenjang}. Gunakan SD, SMP, atau SMA.`);
+    throw new Error('Wajib memilih jenjang pendidikan sebelum memulai pre-test.');
   }
 
   return apiFetch('/education-levels/select', {
@@ -25,5 +20,4 @@ export const selectEducationLevel = async (jenjang) => {
     headers: authHeader(),
     body: JSON.stringify({ educationLevel }),
   });
-  // Returns: { id, userId, educationLevel, selectedAt }
 };

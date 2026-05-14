@@ -36,3 +36,16 @@ export const getMe = async () => {
   if (!data.success) throw new Error(data.message);
   return data.data;
 };
+
+export const logoutUser = async () => {
+  const res = await fetch(`${BASE_URL}/auth/logout`, {
+    method: 'POST',
+    headers: authHeader(),
+  });
+
+  const data = await res.json();
+
+  if (!data.success) throw new Error(data.message);
+
+  return data.message;
+};
