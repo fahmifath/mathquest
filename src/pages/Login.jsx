@@ -18,8 +18,10 @@ const Login = () => {
     setError(null);
 
     try {
-      await login({ email, password });
-      navigate('/pilih-jenjang');
+      const response =await login({ email, password });
+
+      const hasCompletedPreTest = response.user.pretestSessions.length > 0;
+      navigate(hasCompletedPreTest ? '/dashboard/quest-map' : '/pilih-jenjang');
     } catch (err) {
       // Tampilkan pesan error dari BE
       // Contoh: "Email atau password salah."

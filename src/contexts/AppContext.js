@@ -40,17 +40,17 @@ export const AppProvider = ({ children }) => {
   const normalizeUser = (beUser) => {
     const latestLevel = beUser.userEducationLevels?.[0]?.educationLevel || null;
     return {
-      id:       beUser.id,
-      username: beUser.name,            
-      email:    beUser.email,
-      foto:     beUser.avatarUrl
-                || `https://api.dicebear.com/7.x/avataaars/svg?seed=${beUser.name}`,
-      xp:       beUser.userXp?.totalXp || 0,
-      level:    beUser.userXp?.level || 1,
+      id: beUser.id,
+      username: beUser.name,
+      email: beUser.email,
+      foto: beUser.avatarUrl
+        || `https://api.dicebear.com/7.x/avataaars/svg?seed=${beUser.name}`,
+      xp: beUser.userXp?.totalXp || 0,
+      level: beUser.userXp?.level || 1,
       xpToNext: beUser.userXp?.xpToNextLevel || 100,
-      streak:  beUser.userStreak?.currentStreak || 0,
-      jenjang:  latestLevel,
-      rank:     '-',
+      streak: beUser.userStreak?.currentStreak || 0,
+      jenjang: latestLevel,
+      rank: beUser.leaderboardRank || null,
     };
   };
 
@@ -62,8 +62,13 @@ export const AppProvider = ({ children }) => {
 
     // Set user ke state dengan format FE
     setUser(normalizeUser(beUser));
+
+    return {
+      user: beUser,
+      token,
+    };
   };
-  
+
   const updateJenjang = async (educationLevel) => {
     await selectEducationLevel(educationLevel);
     setUser((prev) => ({ ...prev, jenjang: educationLevel }));
@@ -72,8 +77,8 @@ export const AppProvider = ({ children }) => {
   const syncXpFromBE = (userXpFromBE) => {
     setUser((prev) => ({
       ...prev,
-      xp:      userXpFromBE.totalXp,
-      level:   userXpFromBE.level,
+      xp: userXpFromBE.totalXp,
+      level: userXpFromBE.level,
       xpToNext: userXpFromBE.xpToNextLevel,
     }));
   };
@@ -99,7 +104,7 @@ export const AppProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await logoutUser(); 
+      await logoutUser();
     } catch {
       // Abaikan error logout dari BE
     }
