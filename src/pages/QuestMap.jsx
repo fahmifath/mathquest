@@ -338,7 +338,7 @@ const PathNode = ({
 const ZIGZAG = [80, 0];
 
 const ZigzagPath = ({
-  nodes,
+  nodes,  
   onPress,
 }) => {
   return (
@@ -512,7 +512,7 @@ const SidePanel = ({ user }) => {
         <div className="space-y-3">
           <div className="flex items-center gap-3">
             <span className="font-black text-sm text-slate-400">
-              #14
+              #{user?.rank}
             </span>
 
             <div className="w-10 h-10 rounded-full bg-slate-100 overflow-hidden">
