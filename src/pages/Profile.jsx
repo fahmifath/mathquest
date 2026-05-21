@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../contexts/AppContext';
 import {
   User, Mail, Shield, Edit3, Check, X,
@@ -6,35 +6,61 @@ import {
   Camera, BookOpen, Award, TrendingUp,
   ChevronRight, Lock
 } from 'lucide-react';
+import { getXpLogs } from '../services/xpLogService';
 
-// ─── DATA STATIS (nanti bisa dari API) ───────────────────────────────────────
 const JENJANG_OPTIONS = ['SD', 'SMP', 'SMA'];
-
-const ACTIVITY_LOG = [
-  { date: 'Hari ini', action: 'Menyelesaikan Boss: Operasi Campuran', xp: 250, icon: '⚔️' },
-  { date: 'Kemarin', action: 'Menyelesaikan Pengurangan Dasar', xp: 100, icon: '➖' },
-  { date: '2 hari lalu', action: 'Menyelesaikan Penjumlahan Dasar', xp: 100, icon: '➕' },
-  { date: '3 hari lalu', action: 'Menyelesaikan Pre-Test SD', xp: 50, icon: '📋' },
-  { date: '5 hari lalu', action: 'Pertama kali login!', xp: 20, icon: '🚀' },
-];
 
 const STAT_CARDS = (user) => [
   { label: 'Total XP', value: (user?.xp || 0).toLocaleString(), icon: <Star size={18} fill="currentColor" />, color: 'text-mq-orange', bg: 'bg-orange-50', border: 'border-orange-100' },
   { label: 'Level', value: user?.level || 1, icon: <Zap size={18} fill="currentColor" />, color: 'text-mq-primary', bg: 'bg-blue-50', border: 'border-blue-100' },
-  { label: 'Streak', value: '3 hari', icon: <Flame size={18} fill="currentColor" />, color: 'text-red-500', bg: 'bg-red-50', border: 'border-red-100' },
+  { label: 'Streak', value: user?.streak || 0, icon: <Flame size={18} fill="currentColor" />, color: 'text-red-500', bg: 'bg-red-50', border: 'border-red-100' },
   { label: 'Pencapaian', value: '1 / 9', icon: <Award size={18} />, color: 'text-purple-500', bg: 'bg-purple-50', border: 'border-purple-100' },
 ];
 
 // ─── XP PROGRESS UTIL ────────────────────────────────────────────────────────
-const xpForLevel = (level) => level * 1000;
+const xpForLevel = (level) => level * 100;
 const xpProgress = (xp, level) => {
-  const start = (level - 1) * 1000;
-  const end = level * 1000;
+  const start = (level - 1) * 100;
+  const end = level * 100;
   return Math.min(((xp - start) / (end - start)) * 100, 100);
 };
 
 // ─── AVATAR SEEDS (untuk pilih avatar) ───────────────────────────────────────
 const AVATAR_SEEDS = ['hero', 'mage', 'archer', 'knight', 'wizard', 'ranger', 'warrior', 'sage'];
+
+const SOURCE_CONFIG = {
+  module: {
+    label: 'Menyelesaikan Modul',
+    icon: '📘',
+  },
+  quiz: {
+    label: 'Menyelesaikan Quiz',
+    icon: '🧠',
+  },
+  pretest: {
+    label: 'Menyelesaikan Pre-Test',
+    icon: '📋',
+  },
+  achievement: {
+    label: 'Mendapat Achievement',
+    icon: '🏆',
+  },
+};
+
+const formatRelativeDate = (dateString) => {
+  const date = new Date(dateString);
+  const now = new Date();
+
+  const diffMs = now - date;
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffHours < 1) return 'Baru saja';
+  if (diffHours < 24) return `${diffHours} jam lalu`;
+  if (diffDays === 1) return 'Kemarin';
+
+  return `${diffDays} hari lalu`;
+};
 
 // ─── KOMPONEN: EDIT FIELD ─────────────────────────────────────────────────────
 const EditableField = ({ label, value, icon, onSave, type = 'text', options }) => {
@@ -115,9 +141,8 @@ const AvatarPicker = ({ currentSeed, onSelect, onClose }) => (
           <button
             key={seed}
             onClick={() => { onSelect(seed); onClose(); }}
-            className={`aspect-square rounded-2xl overflow-hidden border-3 transition-all hover:scale-105 ${
-              currentSeed === seed ? 'border-mq-primary ring-2 ring-mq-primary/30' : 'border-slate-100'
-            }`}
+            className={`aspect-square rounded-2xl overflow-hidden border-3 transition-all hover:scale-105 ${currentSeed === seed ? 'border-mq-primary ring-2 ring-mq-primary/30' : 'border-slate-100'
+              }`}
             style={{ border: currentSeed === seed ? '3px solid #0259DD' : '3px solid #f1f5f9' }}
           >
             <img
@@ -141,6 +166,9 @@ const Profile = () => {
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
   const [avatarSeed, setAvatarSeed] = useState(user?.username || 'hero');
 
+  const [activityLogs, setActivityLogs] = useState([]);
+  const [loadingLogs, setLoadingLogs] = useState(true);
+
   const level = user?.level || 1;
   const xp = user?.xp || 0;
   const progressPct = xpProgress(xp, level);
@@ -155,6 +183,39 @@ const Profile = () => {
     const newFoto = `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}`;
     setUser(prev => ({ ...prev, foto: newFoto }));
   };
+
+  useEffect(() => {
+    const fetchXpLogs = async () => {
+      try {
+        setLoadingLogs(true);
+
+        const res = await getXpLogs();
+
+        const formattedLogs = (res?.logs || []).map((log) => {
+          const config = SOURCE_CONFIG[log.sourceType] || {
+            label: 'Mendapat XP',
+            icon: '⭐',
+          };
+
+          return {
+            id: log.id,
+            action: config.label,
+            icon: config.icon,
+            xp: log.xpAmount,
+            date: formatRelativeDate(log.createdAt),
+          };
+        });
+
+        setActivityLogs(formattedLogs);
+      } catch (error) {
+        console.error('Gagal mengambil XP logs:', error);
+      } finally {
+        setLoadingLogs(false);
+      }
+    };
+
+    fetchXpLogs();
+  }, []);
 
   return (
     <div className="animate-in fade-in duration-500 max-w-4xl">
@@ -188,7 +249,15 @@ const Profile = () => {
             <div className="flex items-center justify-center md:justify-start gap-3 mb-1">
               <h2 className="text-3xl font-black text-white">{user?.username || 'Petualang'}</h2>
               <span className="px-3 py-1 bg-white/20 text-white text-xs font-black rounded-xl uppercase tracking-wider">
-                {user?.jenjang || 'SD'}
+                {
+                  (
+                    {
+                      primary: 'SD',
+                      middle: 'SMP',
+                      high: 'SMA',
+                    }[user?.jenjang]
+                  ) || 'SD'
+                }
               </span>
             </div>
             <p className="text-white/70 font-medium mb-4">{user?.email || 'petualang@mathquest.id'}</p>
@@ -260,7 +329,15 @@ const Profile = () => {
               />
               <EditableField
                 label="Jenjang"
-                value={user?.jenjang || 'SD'}
+                value={
+                  (
+                    {
+                      primary: 'SD',
+                      middle: 'SMP',
+                      high: 'SMA',
+                    }[user?.jenjang]
+                  ) || 'SD'
+                }
                 icon={<BookOpen size={15} />}
                 options={JENJANG_OPTIONS}
                 onSave={(v) => handleSaveField('jenjang', v)}
@@ -281,7 +358,7 @@ const Profile = () => {
                 </div>
                 <div className="flex-1">
                   <p className="font-bold text-slate-800">Ganti Password</p>
-                  <p className="text-xs text-slate-400">Terakhir diubah: belum pernah</p>
+                  <p className="text-xs text-slate-400">Terakhir diubah: {user?.lastPasswordChange || 'Belum pernah'}</p>
                 </div>
                 <ChevronRight size={16} className="text-slate-300 group-hover:text-mq-primary transition-colors" />
               </button>
@@ -300,7 +377,7 @@ const Profile = () => {
                 <Trophy size={18} className="text-white" fill="white" />
                 <p className="text-xs font-black uppercase tracking-widest opacity-80">Peringkat Global</p>
               </div>
-              <p className="text-5xl font-black mb-1">#—</p>
+              <p className="text-5xl font-black mb-1">#{user?.rank}</p>
               <p className="text-sm opacity-70 font-medium">Selesaikan lebih banyak quest untuk masuk leaderboard!</p>
               <div className="mt-4 flex items-center gap-2">
                 <TrendingUp size={14} />
@@ -344,16 +421,38 @@ const Profile = () => {
               <h3 className="font-black text-slate-800">Aktivitas Terakhir</h3>
             </div>
             <div className="divide-y divide-slate-50">
-              {ACTIVITY_LOG.map((log, i) => (
-                <div key={i} className="flex items-center gap-3 px-5 py-3 hover:bg-slate-50 transition-all">
-                  <span className="text-xl shrink-0">{log.icon}</span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-slate-700 truncate">{log.action}</p>
-                    <p className="text-[10px] text-slate-400 font-medium">{log.date}</p>
-                  </div>
-                  <span className="text-xs font-black text-mq-orange shrink-0">+{log.xp} XP</span>
+              {loadingLogs ? (
+                <div className="px-5 py-6 text-center text-sm text-slate-400 font-medium">
+                  Memuat aktivitas...
                 </div>
-              ))}
+              ) : activityLogs.length > 0 ? (
+                activityLogs.map((log) => (
+                  <div
+                    key={log.id}
+                    className="flex items-center gap-3 px-5 py-3 hover:bg-slate-50 transition-all"
+                  >
+                    <span className="text-xl shrink-0">{log.icon}</span>
+
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold text-slate-700 truncate">
+                        {log.action}
+                      </p>
+
+                      <p className="text-[10px] text-slate-400 font-medium">
+                        {log.date}
+                      </p>
+                    </div>
+
+                    <span className="text-xs font-black text-mq-orange shrink-0">
+                      +{log.xp} XP
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <div className="px-5 py-6 text-center text-sm text-slate-400 font-medium">
+                  Belum ada aktivitas
+                </div>
+              )}
             </div>
           </div>
         </div>
