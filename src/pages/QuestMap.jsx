@@ -305,35 +305,6 @@ const buildQuestNodes = (module) => {
 
 const SidePanel = ({ user }) => (
   <div className="w-72 shrink-0 hidden lg:block">
-    {/* Daily Goals */}
-    <div className="bg-white rounded-3xl border-2 border-slate-100 p-5 mb-5">
-      <div className="flex items-center gap-2 mb-5">
-        <div className="w-10 h-10 rounded-2xl flex items-center justify-center bg-[#FFF3E0]">
-          <Target size={18} style={{ color: '#FF9600' }} />
-        </div>
-        <h3 className="font-black text-slate-700">Daily Goals</h3>
-      </div>
-      <div className="space-y-4">
-        {[
-          { label: 'Collect 100 XP', current: 40,  max: 100 },
-          { label: 'Finish 1 Quiz',  current: 0,   max: 1   },
-        ].map((g, i) => (
-          <div key={i}>
-            <div className="flex justify-between text-xs font-black mb-2">
-              <span>{g.label}</span>
-              <span>{g.current}/{g.max}</span>
-            </div>
-            <div className="w-full h-3 rounded-full overflow-hidden bg-slate-100">
-              <div
-                className="h-full rounded-full"
-                style={{ width: `${Math.round((g.current / g.max) * 100)}%`, background: C.green }}
-              />
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-
     {/* Leaderboard snippet */}
     <div className="bg-white rounded-3xl border-2 border-slate-100 p-5">
       <div className="flex items-center gap-2 mb-5">
@@ -519,11 +490,6 @@ const QuestMap = () => {
       <div className="flex-1">
         {/* Top bar */}
         <div className="flex items-center gap-3 mb-8 flex-wrap">
-          <div className="flex items-center gap-2 bg-white border-2 border-slate-100 rounded-2xl px-4 py-2.5 shadow-sm">
-            <Zap size={18} fill="#FFD700" style={{ color: '#FFD700' }} />
-            <span className="font-black text-slate-700">{(user?.xp ?? 0).toLocaleString()} XP</span>
-          </div>
-
           <div className="flex items-center gap-2 bg-white border-2 border-slate-100 rounded-2xl px-4 py-2.5 shadow-sm">
             <Flame size={18} fill="#FF4B4B" style={{ color: '#FF4B4B' }} />
             <span className="font-black text-slate-700">{user?.streak ?? 0} Hari Streak</span>
