@@ -4,7 +4,7 @@ import {
   User, Mail, Shield, Edit3, Check, X,
   Star, Zap, Flame, Trophy, Target,
   Camera, BookOpen, Award, TrendingUp,
-  ChevronRight, Lock
+  ChevronRight, Lock, LogOut
 } from 'lucide-react';
 import { getXpLogs } from '../services/xpLogService';
 
@@ -25,40 +25,25 @@ const xpProgress = (xp, level) => {
   return Math.min(((xp - start) / (end - start)) * 100, 100);
 };
 
-// ─── AVATAR SEEDS (untuk pilih avatar) ───────────────────────────────────────
+// ─── AVATAR SEEDS ─────────────────────────────────────────────────────────────
 const AVATAR_SEEDS = ['hero', 'mage', 'archer', 'knight', 'wizard', 'ranger', 'warrior', 'sage'];
 
 const SOURCE_CONFIG = {
-  module: {
-    label: 'Menyelesaikan Modul',
-    icon: '📘',
-  },
-  quiz: {
-    label: 'Menyelesaikan Quiz',
-    icon: '🧠',
-  },
-  pretest: {
-    label: 'Menyelesaikan Pre-Test',
-    icon: '📋',
-  },
-  achievement: {
-    label: 'Mendapat Achievement',
-    icon: '🏆',
-  },
+  module:      { label: 'Menyelesaikan Modul',    icon: '📘' },
+  quiz:        { label: 'Menyelesaikan Quiz',      icon: '🧠' },
+  pretest:     { label: 'Menyelesaikan Pre-Test',  icon: '📋' },
+  achievement: { label: 'Mendapat Achievement',    icon: '🏆' },
 };
 
 const formatRelativeDate = (dateString) => {
   const date = new Date(dateString);
   const now = new Date();
-
   const diffMs = now - date;
   const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
   if (diffHours < 1) return 'Baru saja';
   if (diffHours < 24) return `${diffHours} jam lalu`;
   if (diffDays === 1) return 'Kemarin';
-
   return `${diffDays} hari lalu`;
 };
 
@@ -67,14 +52,8 @@ const EditableField = ({ label, value, icon, onSave, type = 'text', options }) =
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value);
 
-  const handleSave = () => {
-    onSave(draft);
-    setEditing(false);
-  };
-  const handleCancel = () => {
-    setDraft(value);
-    setEditing(false);
-  };
+  const handleSave = () => { onSave(draft); setEditing(false); };
+  const handleCancel = () => { setDraft(value); setEditing(false); };
 
   return (
     <div className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-100 group hover:border-mq-primary/30 transition-all">
@@ -141,8 +120,7 @@ const AvatarPicker = ({ currentSeed, onSelect, onClose }) => (
           <button
             key={seed}
             onClick={() => { onSelect(seed); onClose(); }}
-            className={`aspect-square rounded-2xl overflow-hidden border-3 transition-all hover:scale-105 ${currentSeed === seed ? 'border-mq-primary ring-2 ring-mq-primary/30' : 'border-slate-100'
-              }`}
+            className="aspect-square rounded-2xl overflow-hidden transition-all hover:scale-105"
             style={{ border: currentSeed === seed ? '3px solid #0259DD' : '3px solid #f1f5f9' }}
           >
             <img
@@ -161,10 +139,12 @@ const AvatarPicker = ({ currentSeed, onSelect, onClose }) => (
 );
 
 // ─── MAIN: PROFILE PAGE ───────────────────────────────────────────────────────
-const Profile = () => {
+// Menerima prop onLogout dari Dashboard
+const Profile = ({ onLogout }) => {
   const { user, setUser } = useApp();
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
   const [avatarSeed, setAvatarSeed] = useState(user?.username || 'hero');
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const [activityLogs, setActivityLogs] = useState([]);
   const [loadingLogs, setLoadingLogs] = useState(true);
@@ -188,15 +168,9 @@ const Profile = () => {
     const fetchXpLogs = async () => {
       try {
         setLoadingLogs(true);
-
         const res = await getXpLogs();
-
         const formattedLogs = (res?.logs || []).map((log) => {
-          const config = SOURCE_CONFIG[log.sourceType] || {
-            label: 'Mendapat XP',
-            icon: '⭐',
-          };
-
+          const config = SOURCE_CONFIG[log.sourceType] || { label: 'Mendapat XP', icon: '⭐' };
           return {
             id: log.id,
             action: config.label,
@@ -205,7 +179,6 @@ const Profile = () => {
             date: formatRelativeDate(log.createdAt),
           };
         });
-
         setActivityLogs(formattedLogs);
       } catch (error) {
         console.error('Gagal mengambil XP logs:', error);
@@ -213,7 +186,6 @@ const Profile = () => {
         setLoadingLogs(false);
       }
     };
-
     fetchXpLogs();
   }, []);
 
@@ -222,7 +194,6 @@ const Profile = () => {
 
       {/* ── HERO CARD ── */}
       <div className="relative bg-mq-primary rounded-[2.5rem] p-8 mb-8 overflow-hidden shadow-xl shadow-blue-200">
-        {/* Dekorasi latar */}
         <div className="absolute top-0 right-0 w-72 h-72 bg-white/10 rounded-full -mr-24 -mt-24 pointer-events-none" />
         <div className="absolute bottom-0 right-32 w-40 h-40 bg-white/5 rounded-full -mb-12 pointer-events-none" />
 
@@ -249,15 +220,7 @@ const Profile = () => {
             <div className="flex items-center justify-center md:justify-start gap-3 mb-1">
               <h2 className="text-3xl font-black text-white">{user?.username || 'Petualang'}</h2>
               <span className="px-3 py-1 bg-white/20 text-white text-xs font-black rounded-xl uppercase tracking-wider">
-                {
-                  (
-                    {
-                      primary: 'SD',
-                      middle: 'SMP',
-                      high: 'SMA',
-                    }[user?.jenjang]
-                  ) || 'SD'
-                }
+                {({ primary: 'SD', middle: 'SMP', high: 'SMA' }[user?.jenjang]) || 'SD'}
               </span>
             </div>
             <p className="text-white/70 font-medium mb-4">{user?.email || 'petualang@mathquest.id'}</p>
@@ -329,21 +292,26 @@ const Profile = () => {
               />
               <EditableField
                 label="Jenjang"
-                value={
-                  (
-                    {
-                      primary: 'SD',
-                      middle: 'SMP',
-                      high: 'SMA',
-                    }[user?.jenjang]
-                  ) || 'SD'
-                }
+                value={({ primary: 'SD', middle: 'SMP', high: 'SMA' }[user?.jenjang]) || 'SD'}
                 icon={<BookOpen size={15} />}
                 options={JENJANG_OPTIONS}
                 onSave={(v) => handleSaveField('jenjang', v)}
               />
             </div>
           </div>
+
+          {/* ── TOMBOL LOGOUT — hanya tampil di mobile (lg ke atas sudah ada di sidebar) ── */}
+          {onLogout && (
+            <div className="lg:hidden">
+              <button
+                onClick={() => setShowLogoutConfirm(true)}
+                className="flex items-center gap-3 w-full px-5 py-4 rounded-2xl font-black text-red-500 bg-red-50 border border-red-100 hover:bg-red-100 transition-all"
+              >
+                <LogOut size={18} />
+                Keluar dari Akun
+              </button>
+            </div>
+          )}
         </div>
 
         {/* ── KOLOM KANAN ── */}
@@ -375,8 +343,8 @@ const Profile = () => {
             <div className="p-4 space-y-4">
               {[
                 { label: 'Modul Selesai', value: 2, max: 9, color: 'bg-mq-primary' },
-                { label: 'Achievement', value: 1, max: 9, color: 'bg-yellow-400' },
-                { label: 'Bab Terbuka', value: 1, max: 3, color: 'bg-green-500' },
+                { label: 'Achievement',   value: 1, max: 9, color: 'bg-yellow-400' },
+                { label: 'Bab Terbuka',   value: 1, max: 3, color: 'bg-green-500'  },
               ].map((item, i) => (
                 <div key={i}>
                   <div className="flex justify-between text-xs font-bold mb-1.5">
@@ -407,25 +375,13 @@ const Profile = () => {
                 </div>
               ) : activityLogs.length > 0 ? (
                 activityLogs.map((log) => (
-                  <div
-                    key={log.id}
-                    className="flex items-center gap-3 px-5 py-3 hover:bg-slate-50 transition-all"
-                  >
+                  <div key={log.id} className="flex items-center gap-3 px-5 py-3 hover:bg-slate-50 transition-all">
                     <span className="text-xl shrink-0">{log.icon}</span>
-
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold text-slate-700 truncate">
-                        {log.action}
-                      </p>
-
-                      <p className="text-[10px] text-slate-400 font-medium">
-                        {log.date}
-                      </p>
+                      <p className="text-sm font-bold text-slate-700 truncate">{log.action}</p>
+                      <p className="text-[10px] text-slate-400 font-medium">{log.date}</p>
                     </div>
-
-                    <span className="text-xs font-black text-mq-orange shrink-0">
-                      +{log.xp} XP
-                    </span>
+                    <span className="text-xs font-black text-mq-orange shrink-0">+{log.xp} XP</span>
                   </div>
                 ))
               ) : (
@@ -437,6 +393,34 @@ const Profile = () => {
           </div>
         </div>
       </div>
+
+      {/* ── MODAL KONFIRMASI LOGOUT ── */}
+      {showLogoutConfirm && (
+        <div className="fixed inset-0 z-[200] bg-black/40 backdrop-blur-sm flex items-end sm:items-center justify-center p-4">
+          <div className="bg-white rounded-[2rem] w-full max-w-sm p-6 animate-in slide-in-from-bottom duration-200">
+            <div className="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <LogOut size={24} className="text-red-500" />
+            </div>
+            <h3 className="font-black text-slate-800 text-center text-lg mb-1">Keluar dari Akun?</h3>
+            <p className="text-slate-400 text-sm text-center mb-6">Kamu harus login lagi untuk melanjutkan petualanganmu.</p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowLogoutConfirm(false)}
+                className="flex-1 py-3.5 rounded-2xl border-2 border-slate-200 font-black text-slate-500 hover:bg-slate-50 transition-all"
+              >
+                Batal
+              </button>
+              <button
+                onClick={onLogout}
+                className="flex-1 py-3.5 rounded-2xl font-black text-white bg-red-500 hover:bg-red-600 transition-all"
+                style={{ boxShadow: '0 4px 0 #CC2222' }}
+              >
+                Keluar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Avatar Picker Modal */}
       {showAvatarPicker && (
