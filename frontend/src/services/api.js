@@ -1,4 +1,4 @@
-const BASE_URL = import.meta.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const BASE_URL = 'https://math-quest.up.railway.app/api';
 
 const getToken = () => localStorage.getItem('mq_token');
 
