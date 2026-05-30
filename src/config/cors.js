@@ -6,7 +6,7 @@ const allowedOrigins = [
   'http://localhost:5173', // Vite default
   'http://localhost:3000', // fallback CRA
   'http://127.0.0.1:3000',
-  'https://mathquest-12.vercel.app/api'
+  'https://mathquest-12.vercel.app'
 ];
 
 module.exports = cors({
