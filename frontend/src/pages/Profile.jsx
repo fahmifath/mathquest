@@ -17,7 +17,6 @@ const STAT_CARDS = (user) => [
   { label: 'Pencapaian', value: `${user?.totalAchievements || 0} / 9`, icon: <Award size={18} />, color: 'text-purple-500', bg: 'bg-purple-50', border: 'border-purple-100' },
 ];
 
-// ─── XP PROGRESS UTIL ────────────────────────────────────────────────────────
 const xpForLevel = (level) => level * 100;
 const xpProgress = (xp, level) => {
   const start = (level - 1) * 100;
@@ -25,7 +24,6 @@ const xpProgress = (xp, level) => {
   return Math.min(((xp - start) / (end - start)) * 100, 100);
 };
 
-// ─── AVATAR SEEDS ─────────────────────────────────────────────────────────────
 const AVATAR_SEEDS = ['hero', 'mage', 'archer', 'knight', 'wizard', 'ranger', 'warrior', 'sage'];
 
 const SOURCE_CONFIG = {
@@ -47,7 +45,6 @@ const formatRelativeDate = (dateString) => {
   return `${diffDays} hari lalu`;
 };
 
-// ─── KOMPONEN: EDIT FIELD ─────────────────────────────────────────────────────
 const EditableField = ({ label, value, icon, onSave, type = 'text', options }) => {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value);
@@ -105,7 +102,6 @@ const EditableField = ({ label, value, icon, onSave, type = 'text', options }) =
   );
 };
 
-// ─── KOMPONEN: AVATAR PICKER ──────────────────────────────────────────────────
 const AvatarPicker = ({ currentSeed, onSelect, onClose }) => (
   <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
     <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-sm animate-in zoom-in duration-200">
@@ -138,8 +134,6 @@ const AvatarPicker = ({ currentSeed, onSelect, onClose }) => (
   </div>
 );
 
-// ─── MAIN: PROFILE PAGE ───────────────────────────────────────────────────────
-// Menerima prop onLogout dari Dashboard
 const Profile = ({ onLogout }) => {
   const { user, setUser } = useApp();
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
@@ -192,13 +186,11 @@ const Profile = ({ onLogout }) => {
   return (
     <div className="animate-in fade-in duration-500 max-w-4xl">
 
-      {/* ── HERO CARD ── */}
       <div className="relative bg-mq-primary rounded-[2.5rem] p-8 mb-8 overflow-hidden shadow-xl shadow-blue-200">
         <div className="absolute top-0 right-0 w-72 h-72 bg-white/10 rounded-full -mr-24 -mt-24 pointer-events-none" />
         <div className="absolute bottom-0 right-32 w-40 h-40 bg-white/5 rounded-full -mb-12 pointer-events-none" />
 
         <div className="relative z-10 flex flex-col md:flex-row items-center md:items-start gap-6">
-          {/* Avatar */}
           <div className="relative shrink-0">
             <div className="w-28 h-28 rounded-3xl overflow-hidden border-4 border-white/30 shadow-2xl bg-mq-peach">
               <img
@@ -215,7 +207,6 @@ const Profile = ({ onLogout }) => {
             </button>
           </div>
 
-          {/* Info Utama */}
           <div className="flex-1 text-center md:text-left">
             <div className="flex items-center justify-center md:justify-start gap-3 mb-1">
               <h2 className="text-3xl font-black text-white">{user?.username || 'Petualang'}</h2>
@@ -225,7 +216,6 @@ const Profile = ({ onLogout }) => {
             </div>
             <p className="text-white/70 font-medium mb-4">{user?.email || 'petualang@mathquest.id'}</p>
 
-            {/* XP Bar */}
             <div className="bg-white/10 rounded-2xl p-4">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
@@ -251,11 +241,7 @@ const Profile = ({ onLogout }) => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-
-        {/* ── KOLOM KIRI ── */}
         <div className="md:col-span-3 space-y-6">
-
-          {/* Stat Cards */}
           <div className="grid grid-cols-2 gap-3">
             {STAT_CARDS(user).map((s, i) => (
               <div key={i} className={`${s.bg} border ${s.border} rounded-2xl p-4 flex items-center gap-3`}>
@@ -270,7 +256,6 @@ const Profile = ({ onLogout }) => {
             ))}
           </div>
 
-          {/* Edit Profil */}
           <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
             <div className="px-6 py-4 border-b border-slate-50 flex items-center gap-2">
               <User size={16} className="text-mq-primary" />
@@ -299,25 +284,10 @@ const Profile = ({ onLogout }) => {
               />
             </div>
           </div>
-
-          {/* ── TOMBOL LOGOUT — hanya tampil di mobile (lg ke atas sudah ada di sidebar) ── */}
-          {onLogout && (
-            <div className="lg:hidden">
-              <button
-                onClick={() => setShowLogoutConfirm(true)}
-                className="flex items-center gap-3 w-full px-5 py-4 rounded-2xl font-black text-red-500 bg-red-50 border border-red-100 hover:bg-red-100 transition-all"
-              >
-                <LogOut size={18} />
-                Keluar dari Akun
-              </button>
-            </div>
-          )}
         </div>
 
-        {/* ── KOLOM KANAN ── */}
         <div className="md:col-span-2 space-y-6">
 
-          {/* Rank Card */}
           <div className="bg-gradient-to-br from-amber-400 to-orange-500 rounded-3xl p-5 text-white shadow-lg shadow-orange-200 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-8 -mt-8 pointer-events-none" />
             <div className="relative z-10">
@@ -334,7 +304,6 @@ const Profile = ({ onLogout }) => {
             </div>
           </div>
 
-          {/* Progress Quest */}
           <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
             <div className="px-5 py-4 border-b border-slate-50 flex items-center gap-2">
               <Target size={16} className="text-mq-primary" />
@@ -362,7 +331,6 @@ const Profile = ({ onLogout }) => {
             </div>
           </div>
 
-          {/* Riwayat Aktivitas */}
           <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
             <div className="px-5 py-4 border-b border-slate-50 flex items-center gap-2">
               <Flame size={16} className="text-mq-primary" />
@@ -394,7 +362,18 @@ const Profile = ({ onLogout }) => {
         </div>
       </div>
 
-      {/* ── MODAL KONFIRMASI LOGOUT ── */}
+      {onLogout && (
+        <div className="lg:hidden mt-4 mb-2">
+          <button
+            onClick={() => setShowLogoutConfirm(true)}
+            className="flex items-center justify-center gap-3 w-full px-5 py-4 rounded-2xl font-black text-red-500 bg-red-50 border border-red-100 hover:bg-red-100 transition-all"
+          >
+            <LogOut size={18} />
+            Keluar dari Akun
+          </button>
+        </div>
+      )}
+
       {showLogoutConfirm && (
         <div className="fixed inset-0 z-[200] bg-black/40 backdrop-blur-sm flex items-end sm:items-center justify-center p-4">
           <div className="bg-white rounded-[2rem] w-full max-w-sm p-6 animate-in slide-in-from-bottom duration-200">
@@ -422,7 +401,6 @@ const Profile = ({ onLogout }) => {
         </div>
       )}
 
-      {/* Avatar Picker Modal */}
       {showAvatarPicker && (
         <AvatarPicker
           currentSeed={avatarSeed}

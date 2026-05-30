@@ -176,10 +176,11 @@ const FeedbackBar = ({ result, onNext, isLast, submitting }) => {
             {correct ? 'Jawaban Benar!' : 'Kurang Tepat...'}
           </h3>
           <p className="text-sm text-slate-600 leading-relaxed">
-            {correct
-              ? result.explanation || 'Hebat! Kamu menjawab dengan benar.'
-              : result.correctOption?.explanation || `Jawaban yang benar adalah "${result.correctOption?.optionText}".`
-            }
+            {result.explanation ||
+              (correct
+                ? 'Hebat! Kamu menjawab dengan benar.'
+                : `Jawaban yang benar adalah "${result.correctOption?.optionText}".`
+              )}
           </p>
           {!correct && result.correctOption && (
             <div className="mt-2 inline-flex items-center gap-1.5 bg-green-100 text-green-700 px-3 py-1 rounded-lg text-xs font-black">
