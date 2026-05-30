@@ -2,8 +2,10 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../contexts/AppContext';
 
-import { getModules }  from '../services/moduleService';
+import { getModules } from '../services/moduleService';
 import { getQuizById } from '../services/quizService';
+import NotificationToast from '../components/NotificationToast';
+import useNotifications from '../hooks/useNotifications';
 
 import {
   Lock, CheckCircle2, Play,
@@ -11,29 +13,21 @@ import {
   Clock, BookOpen, Brain,
 } from 'lucide-react';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// CONSTANTS
-// ─────────────────────────────────────────────────────────────────────────────
-
 const C = {
-  green:  '#58CC02', greenDk: '#46A302',
-  blue:   '#1CB0F6', blueDk:  '#0A91D0',
-  red:    '#FF4B4B', redDk:   '#CC2222',
-  gray:   '#E5E7EB', grayDk:  '#9CA3AF',
+  green: '#58CC02', greenDk: '#46A302',
+  blue: '#1CB0F6', blueDk: '#0A91D0',
+  red: '#FF4B4B', redDk: '#CC2222',
+  gray: '#E5E7EB', grayDk: '#9CA3AF',
 };
 
 const ZIGZAG_OFFSETS = [80, 0];
 
-// ─────────────────────────────────────────────────────────────────────────────
-// UNIT BANNER
-// ─────────────────────────────────────────────────────────────────────────────
-
 const UnitBanner = ({ module }) => {
-  const completed  = module.progress?.isCompleted;
+  const completed = module.progress?.isCompleted;
   const totalPages = module._count?.pages || 0;
-  const lastPage   = module.progress?.lastPage || 0;
-  const progress   = totalPages ? Math.min((lastPage / totalPages) * 100, 100) : 0;
-  const isRec      = module.isRecommended;
+  const lastPage = module.progress?.lastPage || 0;
+  const progress = totalPages ? Math.min((lastPage / totalPages) * 100, 100) : 0;
+  const isRec = module.isRecommended;
 
   return (
     <div
@@ -52,7 +46,7 @@ const UnitBanner = ({ module }) => {
           <div className="flex items-center gap-1 text-xs font-bold"><BookOpen size={14} />{totalPages} Halaman</div>
         </div>
         <div className="w-full h-3 rounded-full overflow-hidden bg-black/20">
-          <div className="h-full rounded-full transition-all duration-500" style={{ width:`${progress}%`, background:'rgba(255,255,255,0.9)' }} />
+          <div className="h-full rounded-full transition-all duration-500" style={{ width: `${progress}%`, background: 'rgba(255,255,255,0.9)' }} />
         </div>
         {isRec && (
           <div className="mt-4 inline-flex items-center gap-2 bg-white/20 px-3 py-1.5 rounded-full">
@@ -69,13 +63,9 @@ const UnitBanner = ({ module }) => {
   );
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// NODE POPUP — style sama untuk learning DAN quiz
-// ─────────────────────────────────────────────────────────────────────────────
-
 const NodePopup = ({ node, onClose, onStart, loadingQuiz }) => {
   const isLearning = node.type === 'learning';
-  const color   = isLearning ? C.blue : C.red;
+  const color = isLearning ? C.blue : C.red;
   const colorDk = isLearning ? C.blueDk : C.redDk;
 
   return (
@@ -111,7 +101,7 @@ const NodePopup = ({ node, onClose, onStart, loadingQuiz }) => {
           {/* Loading indicator untuk quiz */}
           {!isLearning && loadingQuiz && (
             <div className="flex items-center gap-1 text-slate-400 ml-auto">
-              <div className="w-3 h-3 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: C.red, borderTopColor:'transparent' }} />
+              <div className="w-3 h-3 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: C.red, borderTopColor: 'transparent' }} />
               <span>Memuat...</span>
             </div>
           )}
@@ -139,17 +129,13 @@ const NodePopup = ({ node, onClose, onStart, loadingQuiz }) => {
   );
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// PATH NODE
-// ─────────────────────────────────────────────────────────────────────────────
-
 const PathNode = ({ node, leftOffset, onPress, quizState }) => {
   const [showPopup, setShowPopup] = useState(false);
 
   const isCompleted = node.status === 'completed';
-  const isCurrent   = node.status === 'current';
-  const isLocked    = node.status === 'locked';
-  const isQuiz      = node.type === 'quiz';
+  const isCurrent = node.status === 'current';
+  const isLocked = node.status === 'locked';
+  const isQuiz = node.type === 'quiz';
 
   const NODE_SIZE = 90;
 
@@ -158,14 +144,13 @@ const PathNode = ({ node, leftOffset, onPress, quizState }) => {
 
   if (!isLocked) {
     if (!isQuiz) { bg = C.blue; shadow = C.blueDk; icon = <BookOpen size={34} className="text-white" />; }
-    else         { bg = C.red;  shadow = C.redDk;  icon = <Brain    size={34} className="text-white" />; }
+    else { bg = C.red; shadow = C.redDk; icon = <Brain size={34} className="text-white" />; }
   }
   if (isCompleted) icon = <CheckCircle2 size={36} className="text-white" fill="white" />;
 
   const handleClick = () => {
     if (isLocked) return;
     setShowPopup((p) => !p);
-    // Kalau quiz dan belum di-fetch, trigger fetch via onPress
     if (isQuiz && !showPopup) onPress(node, 'prefetch');
   };
 
@@ -174,7 +159,6 @@ const PathNode = ({ node, leftOffset, onPress, quizState }) => {
     onPress(node, 'start');
   };
 
-  // Tentukan loadingQuiz dari quizState yang diteruskan dari parent
   const loadingQuiz = isQuiz && quizState?.loadingId === node.id;
 
   return (
@@ -191,37 +175,32 @@ const PathNode = ({ node, leftOffset, onPress, quizState }) => {
       {isCurrent && (
         <div className="absolute -top-1 -right-1 z-10">
           <span className="relative flex h-6 w-6">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ background:'#FFD700' }} />
-            <span className="relative inline-flex rounded-full h-6 w-6 border-2 border-white" style={{ background:'#FFD700' }} />
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ background: '#FFD700' }} />
+            <span className="relative inline-flex rounded-full h-6 w-6 border-2 border-white" style={{ background: '#FFD700' }} />
           </span>
         </div>
       )}
 
       <button
         onClick={handleClick}
-        className={`rounded-full flex items-center justify-center transition-all duration-150 ${
-          !isLocked ? 'hover:brightness-105 active:translate-y-1' : 'cursor-not-allowed'
-        }`}
-        style={{ width:NODE_SIZE, height:NODE_SIZE, background:bg, boxShadow:`0 7px 0 ${shadow}`, border:'6px solid white' }}
+        className={`rounded-full flex items-center justify-center transition-all duration-150 ${!isLocked ? 'hover:brightness-105 active:translate-y-1' : 'cursor-not-allowed'
+          }`}
+        style={{ width: NODE_SIZE, height: NODE_SIZE, background: bg, boxShadow: `0 7px 0 ${shadow}`, border: '6px solid white' }}
       >
         {icon}
       </button>
 
       <div className="mt-3 text-center max-w-[120px]">
         <p className={`text-xs font-black leading-tight ${isLocked ? 'text-slate-400' : 'text-slate-700'}`}>{node.title}</p>
-        {isCurrent   && <p className="text-[10px] font-black text-green-600 mt-1">CURRENT</p>}
+        {isCurrent && <p className="text-[10px] font-black text-green-600 mt-1">CURRENT</p>}
         {isCompleted && <p className="text-[10px] font-black text-slate-400 mt-1">COMPLETED</p>}
       </div>
     </div>
   );
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// ZIGZAG PATH
-// ─────────────────────────────────────────────────────────────────────────────
-
 const ZigzagPath = ({ nodes, onPress, quizState }) => (
-  <div className="relative" style={{ width:280 }}>
+  <div className="relative" style={{ width: 280 }}>
     {nodes.map((node, idx) => (
       <div key={node.id}>
         {idx > 0 && (
@@ -236,47 +215,39 @@ const ZigzagPath = ({ nodes, onPress, quizState }) => (
   </div>
 );
 
-// ─────────────────────────────────────────────────────────────────────────────
-// BUILD QUEST NODES
-// ─────────────────────────────────────────────────────────────────────────────
-
 const buildQuestNodes = (module) => {
-  const totalPages       = module._count?.pages || 0;
+  const totalPages = module._count?.pages || 0;
   const finishedLearning = module.progress?.isCompleted === true;
-  const quizCompleted    = module.quizzes?.some(q => q.sessions?.some(s => s.status === 'completed'));
+  const quizCompleted = module.quizzes?.some(q => q.sessions?.some(s => s.status === 'completed'));
 
   return [
     {
-      id:       `${module.id}-learning`,
-      type:     'learning',
-      title:    module.title,
+      id: `${module.id}-learning`,
+      type: 'learning',
+      title: module.title,
       duration: `${totalPages} halaman`,
-      xp:       module.xpReward,
-      status:   finishedLearning ? 'completed' : 'current',
+      xp: module.xpReward,
+      status: finishedLearning ? 'completed' : 'current',
       module,
     },
     {
-      id:       `${module.id}-quiz`,
-      type:     'quiz',
-      title:    `Quiz ${module.title}`,
+      id: `${module.id}-quiz`,
+      type: 'quiz',
+      title: `Quiz ${module.title}`,
       duration: 'Quiz',
-      xp:       module.xpReward,
-      status:   quizCompleted ? 'completed' : finishedLearning ? 'current' : 'locked',
+      xp: module.xpReward,
+      status: quizCompleted ? 'completed' : finishedLearning ? 'current' : 'locked',
       module,
     },
   ];
 };
-
-// ─────────────────────────────────────────────────────────────────────────────
-// SIDE PANEL
-// ─────────────────────────────────────────────────────────────────────────────
 
 const SidePanel = ({ user }) => (
   <div className="w-72 shrink-0 hidden lg:block">
     <div className="bg-white rounded-3xl border-2 border-slate-100 p-5">
       <div className="flex items-center gap-2 mb-5">
         <div className="w-10 h-10 rounded-2xl flex items-center justify-center bg-[#FFF9E6]">
-          <Trophy size={18} style={{ color:'#FFD700' }} />
+          <Trophy size={18} style={{ color: '#FFD700' }} />
         </div>
         <h3 className="font-black text-slate-700">Leaderboard</h3>
       </div>
@@ -295,18 +266,15 @@ const SidePanel = ({ user }) => (
   </div>
 );
 
-// ─────────────────────────────────────────────────────────────────────────────
-// MAIN — QUEST MAP
-// ─────────────────────────────────────────────────────────────────────────────
-
 const QuestMap = () => {
   const navigate = useNavigate();
-  const { user } = useApp();
+  const { user, updateUserStats } = useApp();
+  const { notifications, triggerNotifications, clearNotifications } = useNotifications();
 
-  const [modules,    setModules]    = useState([]);
-  const [loading,    setLoading]    = useState(true);
 
-  // Quiz fetch state — { loadingId, cache: { [nodeId]: quizData } }
+  const [modules, setModules] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   const [quizState, setQuizState] = useState({ loadingId: null, cache: {} });
 
   useEffect(() => {
@@ -323,9 +291,6 @@ const QuestMap = () => {
   }, []);
 
   const currentModule = useMemo(() => modules.find(m => !m.progress?.isCompleted), [modules]);
-
-  // ── Node press handler ───────────────────────────────────────────────────
-  // mode: 'prefetch' (popup baru dibuka) | 'start' (user klik mulai)
 
   const handleNodePress = async (node, mode) => {
     if (node.type === 'learning') {
@@ -358,7 +323,7 @@ const QuestMap = () => {
     <div className="min-h-[60vh] flex items-center justify-center">
       <div className="text-center">
         <div className="w-16 h-16 rounded-full border-4 border-t-transparent animate-spin mx-auto mb-4"
-          style={{ borderColor: C.green, borderTopColor:'transparent' }} />
+          style={{ borderColor: C.green, borderTopColor: 'transparent' }} />
         <p className="font-black text-slate-500">Loading Quest Map...</p>
       </div>
     </div>
@@ -393,7 +358,7 @@ const QuestMap = () => {
         )}
 
         {/* Quest path */}
-        <div className="mx-auto" style={{ width:280 }}>
+        <div className="mx-auto" style={{ width: 280 }}>
           {modules.map((module, idx) => (
             <div key={module.id} className={idx > 0 ? 'mt-10' : ''}>
               <UnitBanner module={module} />

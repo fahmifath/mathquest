@@ -1,4 +1,4 @@
-const BASE_URL = 'https://math-quest.up.railway.app/api';
+const BASE_URL = 'http://localhost:5000/api';
 
 // Helper untuk header Authorization
 const authHeader = () => ({
