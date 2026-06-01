@@ -252,9 +252,9 @@ const ModuleReader = () => {
           triggerNotifications(notifs);
           pendingNavigateRef.current = true;
         } else {
-          await refreshUser();
           navigate('/dashboard/quest-map');
         }
+        await refreshUser();
         return;
       }
       setCurrentPage(p => p + 1);

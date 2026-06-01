@@ -363,7 +363,7 @@ const ResultScreen = ({ jenjang, result, questions, localAnswers, sessionId }) =
             </div>
           </div>
         </div>
-      </div>
+    </div>
     </div>
   );
 };
