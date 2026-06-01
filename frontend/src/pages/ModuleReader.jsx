@@ -172,7 +172,7 @@ const ModuleReader = () => {
       try {
         const res = await getModuleById(moduleId);
         setModule(res);
-        setCurrentPage(res.progress?.lastPage || 1);
+        setCurrentPage(res.progress?.lastPage + 1 || 1);
       } catch (err) { console.error(err); }
     };
     fetchModule();
@@ -201,19 +201,12 @@ const ModuleReader = () => {
       setPage(res);
       setPageKey(k => k + 1);
 
-      const progressRes = await updateModuleProgress(moduleId, pageNumber);
-      lastProgressRef.current = progressRes;
-
-      if (progressRes?.notifications?.length > 0) {
-        const notifs = filterNotifs(progressRes.notifications);
-        if (notifs.length > 0) {
-          statsRef.current(progressRes.userXp);
-          triggerRef.current(notifs);
-        }
-      }
-    } catch (err) { console.error(err); }
-    finally { setLoading(false); }
-  }, [moduleId, filterNotifs]);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }, [moduleId]);
 
   useEffect(() => {
     if (currentPage) fetchPage(currentPage);
@@ -239,9 +232,18 @@ const ModuleReader = () => {
     if (!page) return;
     setSaving(true);
     try {
-      if (page.isLastPage) {
-        const progressRes = lastProgressRef.current;
+      const progressRes = await updateModuleProgress(moduleId, currentPage);
+      lastProgressRef.current = progressRes;
 
+      if (progressRes?.notifications?.length > 0) {
+        const notifs = filterNotifs(progressRes.notifications);
+        if (notifs.length > 0) {
+          statsRef.current(progressRes.userXp);
+          triggerRef.current(notifs);
+        }
+      }
+
+      if (page.isLastPage) {
         if (progressRes?.userXp) {
           updateUserStats(progressRes.userXp);
         }
@@ -257,6 +259,7 @@ const ModuleReader = () => {
         await refreshUser();
         return;
       }
+
       setCurrentPage(p => p + 1);
     } catch (err) {
       console.error(err);
@@ -280,7 +283,6 @@ const ModuleReader = () => {
 
   const progress = page ? (currentPage / page.totalPages) * 100 : 0;
 
-  // ── Loading ──
   if (loading || !page || !module) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#FDFCFB]">
@@ -429,7 +431,7 @@ const ModuleReader = () => {
                       onClick={skip}
                       className="flex items-center gap-1.5 px-3 py-1.5 bg-white rounded-xl shadow-md border border-slate-100 text-xs font-black text-slate-500 hover:text-slate-700 transition-all"
                     >
-                      Tap untuk skip ⏩
+                      Tap untuk skip
                     </button>
                   </div>
                 )}
@@ -491,9 +493,9 @@ const ModuleReader = () => {
                 {saving ? (
                   <Loader2 size={18} className="animate-spin" />
                 ) : !done ? (
-                  <>Tap untuk skip ⏩</>
+                  <>Tap untuk skip</>
                 ) : page.isLastPage ? (
-                  <><CheckCircle2 size={18} /> Selesai! 🎉</>
+                  <><CheckCircle2 size={18} /> Selesai!</>
                 ) : (
                   <>Halaman Selanjutnya <ChevronRight size={18} /></>
                 )}

@@ -27,10 +27,10 @@ const getMultiavatar = (seed) =>
 const JENJANG_LABEL = { primary: 'SD', middle: 'SMP', high: 'SMA' };
 
 const SOURCE_CONFIG = {
-  module:      { label: 'Menyelesaikan Modul',   icon: '📘' },
-  quiz:        { label: 'Menyelesaikan Quiz',     icon: '🧠' },
-  pretest:     { label: 'Menyelesaikan Pre-Test', icon: '📋' },
-  achievement: { label: 'Mendapat Achievement',   icon: '🏆' },
+  module: { label: 'Menyelesaikan Modul', icon: '📘' },
+  quiz: { label: 'Menyelesaikan Quiz', icon: '🧠' },
+  pretest: { label: 'Menyelesaikan Pre-Test', icon: '📋' },
+  achievement: { label: 'Mendapat Achievement', icon: '🏆' },
 };
 
 const formatRelativeDate = (dateString) => {
@@ -189,7 +189,7 @@ const Profile = ({ onLogout }) => {
   const { user, setUser, refreshUser } = useApp();
 
   // ── Form state ──
-  const [draftName, setDraftName]   = useState(user?.username || '');
+  const [draftName, setDraftName] = useState(user?.username || '');
   const [draftAvatar, setDraftAvatar] = useState(user?.foto || '');
   const [editingName, setEditingName] = useState(false);
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
@@ -201,7 +201,7 @@ const Profile = ({ onLogout }) => {
 
   // ── Data state ──
   const [activityLogs, setActivityLogs] = useState([]);
-  const [loadingLogs, setLoadingLogs]   = useState(true);
+  const [loadingLogs, setLoadingLogs] = useState(true);
   const [progress, setProgress] = useState({
     modulesCompleted: 0, totalModules: 9,
     achievementsUnlocked: 0, totalAchievements: 9,
@@ -274,7 +274,7 @@ const Profile = ({ onLogout }) => {
     try {
       const payload = {};
       if (draftName !== user?.username) payload.name = draftName;
-      if (draftAvatar !== user?.foto)   payload.avatarUrl = draftAvatar;
+      if (draftAvatar !== user?.foto) payload.avatarUrl = draftAvatar;
 
       await updateProfileApi(payload);
 
@@ -585,8 +585,17 @@ const Profile = ({ onLogout }) => {
                 ))
               ) : (
                 [
-                  { label: 'Modul Selesai', value: progress.modulesCompleted, max: progress.totalModules, color: 'bg-mq-primary' },
-                  { label: 'Achievement',   value: progress.achievementsUnlocked, max: progress.totalAchievements, color: 'bg-yellow-400' },
+                  {
+                    label: (
+                      <>
+                        Modul Selesai <span className="text-xs opacity-60 font-normal">(setelah membaca & menyelesaikan kuis)</span>
+                      </>
+                    ),
+                    value: progress.modulesCompleted,
+                    max: progress.totalModules,
+                    color: 'bg-mq-primary'
+                  },
+                  { label: 'Achievement', value: progress.achievementsUnlocked, max: progress.totalAchievements, color: 'bg-yellow-400' },
                 ].map((item, i) => (
                   <div key={i}>
                     <div className="flex justify-between text-xs font-bold mb-1.5">

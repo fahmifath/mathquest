@@ -196,7 +196,7 @@ const FeedbackBar = ({ result, onNext, isLast, submitting }) => {
           boxShadow: correct ? `0 4px 0 ${COLORS.greenDark}` : `0 4px 0 ${COLORS.blueDark}`,
         }}
       >
-        {submitting ? <Loader2 size={18} className="animate-spin" /> : isLast ? ' Selesaikan Quiz' : 'Lanjut →'}
+        {submitting ? <Loader2 size={18} className="animate-spin" /> : isLast ? ' Selesaikan Quiz' : 'Lanjut'}
       </button>
     </div>
   );
